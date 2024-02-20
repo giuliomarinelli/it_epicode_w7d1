@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +45,7 @@ public class DeviceController {
         return deviceSvc.findById(id);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/devices")
     public Device create(@RequestBody @Validated DeviceDTO deviceDTO, BindingResult validation) throws BadRequestException {
@@ -51,7 +53,7 @@ public class DeviceController {
             throw new BadRequestException(ValidationMessages.generateValidationErrorMessage(validation));
         return deviceSvc.create(deviceDTO);
     }
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/devices/{id}")
     public Device update(@RequestBody @Validated DeviceDTO deviceDTO, BindingResult validation, @PathVariable UUID id) throws BadRequestException {
         if (validation.hasErrors())
@@ -62,6 +64,7 @@ public class DeviceController {
     /* NON è possibile fare una chiamata patch con body vuoto, quindi almeno un valore deve essere passato via body,
         altrimenti andrebbe usato il metodo get che però è incoerente con il tipo di operazione
      */
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PatchMapping("/devices/{id}/assign-employee")
     public Device assignDeviceToEmployee(@RequestBody @Validated AssignDeviceToEmployeeDTO assignDeviceToEmployeeDTO,
                                          BindingResult validation, @PathVariable UUID id) throws BadRequestException {
@@ -73,7 +76,7 @@ public class DeviceController {
             throw new BadRequestException("'employeeId' field is malformed since it doesn't respect the Universal Unique ID pattern");
         }
     }
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/devices/{id}")
     public DeleteRes delete(@PathVariable UUID id) throws BadRequestException {
         return deviceSvc.delete(id);

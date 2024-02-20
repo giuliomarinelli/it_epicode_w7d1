@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,7 @@ public class EmployeeController {
     public Employee getById(@PathVariable UUID id) throws NotFoundException {
         return employeeSvc.findById(id);
     }
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/employees")
     public Employee create(@RequestBody @Validated EmployeeDTO employeeDTO,
@@ -50,7 +51,7 @@ public class EmployeeController {
             throw new BadRequestException(ValidationMessages.generateValidationErrorMessage(validation));
         return employeeSvc.create(employeeDTO);
     }
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/employees/{id}")
     public Employee update(@RequestBody @Validated EmployeeDTO employeeDTO,
                            BindingResult validation, @PathVariable UUID id) throws BadRequestException, InternalServerErrorException {
@@ -58,14 +59,14 @@ public class EmployeeController {
             throw new BadRequestException(ValidationMessages.generateValidationErrorMessage(validation));
         return employeeSvc.update(employeeDTO, id);
     }
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PatchMapping("/employees/{id}/upload-profile-picture")
     public Employee upload(@PathVariable UUID id, @RequestParam("file") MultipartFile file) throws IOException, NotFoundException {
         Employee employee = employeeSvc.findById(id);
         String url = (String) cloudinary.uploader().upload(file.getBytes(), new HashMap<>()).get("url");
         return employeeSvc.updateAfterUpload(employee, url);
     }
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/employees/{id}")
     public DeleteRes delete(@PathVariable UUID id) throws BadRequestException, InternalServerErrorException {
         return employeeSvc.delete(id);
